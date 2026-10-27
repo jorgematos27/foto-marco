@@ -70,23 +70,23 @@ export default async function FotoPage({ params }: Props) {
           className="w-full rounded-xl shadow-2xl ring-1 ring-white/10"
         />
 
-        <a
-          href={`/api/download?url=${encodeURIComponent(foto.image_url)}&id=${id}`}
+        <Link
+          href="/"
           className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-white font-black uppercase tracking-widest text-sm"
           style={{
             background: 'linear-gradient(135deg, #DD0000 0%, #770000 100%)',
             boxShadow: '0 0 35px rgba(220,0,0,0.45)',
           }}
         >
-          ↓ Descargar mi MVP Card
-        </a>
+          📷 Crea tu MVP Card
+        </Link>
 
-        <Link
-          href="/"
+        <a
+          href={`/api/download?url=${encodeURIComponent(foto.image_url)}&id=${id}`}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-white font-bold uppercase tracking-widest text-sm border border-white/20 bg-white/5 backdrop-blur-sm"
         >
-          📷 Tómate tu foto
-        </Link>
+          ↓ Descargar esta tarjeta
+        </a>
       </div>
     </div>
   )
