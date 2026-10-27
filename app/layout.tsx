@@ -21,7 +21,7 @@ type LayoutProps<T extends string> = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="es" className={`${oswald.variable} h-full`}>
-      <body className="min-h-full bg-black overflow-hidden">{children}</body>
+      <body className="min-h-full bg-black">{children}</body>
     </html>
   )
 }

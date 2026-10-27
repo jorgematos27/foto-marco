@@ -33,10 +33,10 @@ export default async function FotoPage({ params }: Props) {
 
   if (!foto) {
     return (
-      <div className="relative w-full min-h-screen bg-black flex flex-col items-center justify-center px-8 overflow-hidden">
-        <img src="/bienvenida.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-black/80" />
-        <div className="relative z-10 flex flex-col items-center gap-6 max-w-sm">
+      <div className="relative w-full min-h-[100dvh] bg-black flex flex-col items-center justify-center px-8 py-10">
+        <img src="/bienvenida.png" alt="" className="fixed inset-0 w-full h-full object-cover opacity-20" />
+        <div className="fixed inset-0 bg-black/80" />
+        <div className="relative z-10 flex flex-col items-center gap-6 max-w-sm w-full">
           <p className="text-white text-xl font-bold text-center">
             No pudimos cargar esta tarjeta
           </p>
@@ -59,11 +59,14 @@ export default async function FotoPage({ params }: Props) {
   }
 
   return (
-    <div className="relative w-full min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
-      <img src="/bienvenida.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-15" />
-      <div className="absolute inset-0 bg-black/80" />
+    <div className="relative w-full min-h-[100dvh] bg-black flex flex-col items-center">
+      <img src="/bienvenida.png" alt="" className="fixed inset-0 w-full h-full object-cover opacity-15" />
+      <div className="fixed inset-0 bg-black/80" />
 
-      <div className="relative z-10 flex flex-col items-center gap-5 px-6 py-10 w-full max-w-sm">
+      <div
+        className="relative z-10 flex flex-col items-center gap-4 px-5 pt-6 w-full max-w-sm"
+        style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+      >
         <img
           src={foto.image_url}
           alt={foto.nombre ?? 'MVP Card'}

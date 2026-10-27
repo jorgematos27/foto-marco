@@ -250,22 +250,25 @@ export default function CamaraCaptura() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black select-none">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden bg-black select-none">
       <canvas ref={canvasRef} className="hidden" />
 
       {/* ── 1. BIENVENIDA ── */}
       {estado === 'bienvenida' && (
-        <div className="relative w-full h-full flex flex-col items-center justify-end">
+        <div className="relative w-full min-h-[100dvh] flex flex-col items-center justify-end">
           <img src="/bienvenida.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
           <div
             className="absolute inset-0"
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }}
           />
-          <div className="relative z-10 flex flex-col items-center gap-5 pb-14 px-8 w-full">
+          <div
+            className="relative z-10 flex flex-col items-center gap-4 px-8 w-full"
+            style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}
+          >
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
             <button
               onClick={irACamara}
-              className="w-full max-w-xs flex items-center justify-center gap-3 py-5 rounded-full font-black text-white text-xl uppercase tracking-widest"
+              className="w-full max-w-xs flex items-center justify-center gap-3 py-4 sm:py-5 rounded-full font-black text-white text-lg sm:text-xl uppercase tracking-widest"
               style={{
                 background: 'linear-gradient(135deg, #DD0000 0%, #770000 100%)',
                 boxShadow: '0 0 40px rgba(220,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.15)',
