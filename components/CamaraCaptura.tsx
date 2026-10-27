@@ -285,7 +285,7 @@ export default function CamaraCaptura() {
 
       {/* ── 2. CÁMARA + COUNTDOWN ── */}
       {estado === 'camara' && (
-        <div className="relative w-full h-full">
+        <div className="fixed inset-0 w-full h-[100dvh] bg-black">
           <video
             ref={videoRef}
             autoPlay
@@ -353,7 +353,7 @@ export default function CamaraCaptura() {
 
       {/* ── 3. NOMBRE ── */}
       {estado === 'nombre' && (
-        <div className="w-full h-full flex flex-col bg-black overflow-y-auto">
+        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-black overflow-y-auto">
           <div className="flex flex-col items-center px-6 pt-8 pb-10 gap-5">
             <p className="text-white/40 uppercase tracking-[0.22em] text-xs font-bold">Tu Foto</p>
 
@@ -414,7 +414,7 @@ export default function CamaraCaptura() {
 
       {/* ── 4. GUARDANDO ── */}
       {estado === 'guardando' && (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-black px-8">
+        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center bg-black px-8">
           <div className="flex flex-col items-center gap-8 w-full max-w-xs">
             <div style={{ fontSize: '90px', filter: 'drop-shadow(0 0 25px rgba(255,255,255,0.25))' }}>
               ☁️
@@ -443,7 +443,7 @@ export default function CamaraCaptura() {
 
       {/* ── 5. RESULTADO ── */}
       {estado === 'resultado' && (
-        <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-y-auto">
           <img src="/bienvenida.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-black/75" />
 
