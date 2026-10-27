@@ -4,6 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
+  const tTotal = Date.now()
+  const marks: Record<string, number> = {}
+  const mark = (label: string) => { marks[label] = Date.now() - tTotal }
+
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') ||
@@ -18,6 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   const formData = await req.formData()
+  mark('formData')
   const foto = formData.get('foto') as File | null
 
   if (!foto) {
@@ -34,12 +39,15 @@ export async function POST(req: NextRequest) {
   }
 
   const rawBuffer = Buffer.from(await foto.arrayBuffer())
+  mark('arrayBuffer')
+  const sizeMB = (rawBuffer.length / 1024 / 1024).toFixed(2)
 
-  // Comprimir a WebP — objetivo ~256KB manteniendo 1080x1920
   const optimizado = await sharp(rawBuffer)
     .resize(1080, 1920, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 88, effort: 4 })
+    .webp({ quality: 88, effort: 2 })
     .toBuffer()
+  mark('sharp')
+  const outKB = (optimizado.length / 1024).toFixed(1)
 
   const id = crypto.randomUUID()
   const fileName = `${id}.webp`
@@ -47,6 +55,7 @@ export async function POST(req: NextRequest) {
   const { error: storageError } = await supabaseAdmin.storage
     .from('fotos-marco')
     .upload(fileName, optimizado, { contentType: 'image/webp' })
+  mark('storageUpload')
 
   if (storageError) {
     return NextResponse.json({ error: storageError.message }, { status: 500 })
@@ -62,10 +71,13 @@ export async function POST(req: NextRequest) {
   const { error: dbError } = await supabaseAdmin
     .from('fotos')
     .insert({ id, image_url: publicUrl, qr_url: qrUrl, nombre })
+  mark('dbInsert')
 
   if (dbError) {
     return NextResponse.json({ error: dbError.message }, { status: 500 })
   }
+
+  console.log(`[upload] id=${id} in=${sizeMB}MB out=${outKB}KB timings:`, marks, `total=${Date.now() - tTotal}ms`)
 
   return NextResponse.json({ id, image_url: publicUrl })
 }

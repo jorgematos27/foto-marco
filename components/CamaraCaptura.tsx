@@ -148,6 +148,9 @@ export default function CamaraCaptura() {
     setEstado('guardando')
     setProgreso(0)
 
+    const t0 = performance.now()
+    const log = (label: string) => console.log(`[card] ${label}: ${Math.round(performance.now() - t0)}ms`)
+
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')!
     canvas.width = 1080
@@ -158,6 +161,7 @@ export default function CamaraCaptura() {
       img.onload = () => { ctx.drawImage(img, 0, 0, 1080, 1920); res() }
       img.src = capturedUrl
     })
+    log('canvas listo')
 
     await document.fonts.ready
     const text = nombre.trim().toUpperCase()
@@ -190,12 +194,14 @@ export default function CamaraCaptura() {
 
     canvas.toBlob(async (blob) => {
       if (!blob) return
+      log(`toBlob (${(blob.size/1024).toFixed(0)}KB)`)
       try {
         const form = new FormData()
         form.append('foto', blob, 'foto.png')
         form.append('nombre', nombre.trim())
 
         const res = await fetch('/api/upload', { method: 'POST', body: form })
+        log('fetch respondido')
         const data = await res.json()
 
         clearInterval(interval)
