@@ -51,12 +51,14 @@ export default function CamaraCaptura() {
 
   const iniciarStream = async (esFrontal: boolean) => {
     detenerStream()
+    // No forzamos aspectRatio ni resolución exacta: así el browser usa el
+    // campo de visión natural del sensor y evita hacer zoom digital agresivo
+    // (sobre todo en móviles). El crop a 9:16 se hace al capturar en canvas.
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: esFrontal ? 'user' : 'environment',
-        aspectRatio: 9 / 16,
-        width: { ideal: 1080 },
-        height: { ideal: 1920 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
       },
     })
     streamRef.current = stream
