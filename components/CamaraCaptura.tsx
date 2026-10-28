@@ -98,11 +98,7 @@ export default function CamaraCaptura() {
     detenerStream()
     const dataUrl = canvas.toDataURL('image/png')
     setCapturedUrl(dataUrl)
-    if (PEDIR_NOMBRE) {
-      setEstado('nombre')
-    } else {
-      void generarCard(dataUrl, '')
-    }
+    setEstado('nombre')
   }, [])
 
   const iniciarConteo = useCallback(() => {
@@ -352,54 +348,61 @@ export default function CamaraCaptura() {
       {/* ── 3. NOMBRE ── */}
       {estado === 'nombre' && (
         <div className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-black overflow-y-auto">
-          <div className="flex flex-col items-center px-6 pt-8 pb-10 gap-5">
-            <p className="text-white/40 uppercase tracking-[0.22em] text-xs font-bold">Tu Foto</p>
+          <div className="flex flex-col items-center px-6 pt-6 pb-8 gap-5">
+            <p className="text-white/40 uppercase tracking-[0.22em] text-xs font-bold">
+              {PEDIR_NOMBRE ? 'Tu Foto' : '¿Te gusta?'}
+            </p>
 
             {capturedUrl && (
-              <div className="w-36 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+              <div className={`${PEDIR_NOMBRE ? 'w-36' : 'w-full max-w-[260px]'} rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10`}>
                 <img src={capturedUrl} alt="preview" className="w-full" />
               </div>
             )}
 
             <div className="w-full max-w-xs flex flex-col gap-4">
-              <p className="text-white text-center font-semibold text-lg">Escribe tu nombre</p>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={e => setNombre(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && nombre.trim() && generarCard()}
-                  placeholder="María"
-                  maxLength={20}
-                  autoFocus
-                  className="w-full px-5 py-4 pr-12 rounded-xl bg-white text-black font-bold text-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600"
-                />
-                {nombre && (
-                  <button
-                    onClick={() => setNombre('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl leading-none"
-                  >✕</button>
-                )}
-              </div>
+              {PEDIR_NOMBRE && (
+                <>
+                  <p className="text-white text-center font-semibold text-lg">Escribe tu nombre</p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={nombre}
+                      onChange={e => setNombre(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && nombre.trim() && generarCard()}
+                      placeholder="María"
+                      maxLength={20}
+                      autoFocus
+                      className="w-full px-5 py-4 pr-12 rounded-xl bg-white text-black font-bold text-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                    {nombre && (
+                      <button
+                        onClick={() => setNombre('')}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl leading-none"
+                      >✕</button>
+                    )}
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={() => generarCard()}
-                disabled={!nombre.trim()}
-                className="w-full py-5 rounded-full font-black text-white text-lg uppercase tracking-widest transition-all disabled:opacity-35"
+                disabled={PEDIR_NOMBRE && !nombre.trim()}
+                className="w-full py-5 rounded-full font-black text-white text-base uppercase tracking-widest transition-all disabled:opacity-35"
                 style={{
-                  background: nombre.trim()
-                    ? 'linear-gradient(135deg, #DD0000 0%, #770000 100%)'
-                    : '#2a2a2a',
-                  boxShadow: nombre.trim() ? '0 0 35px rgba(220,0,0,0.45)' : 'none',
+                  background:
+                    !PEDIR_NOMBRE || nombre.trim()
+                      ? 'linear-gradient(135deg, #DD0000 0%, #770000 100%)'
+                      : '#2a2a2a',
+                  boxShadow:
+                    !PEDIR_NOMBRE || nombre.trim() ? '0 0 35px rgba(220,0,0,0.45)' : 'none',
                 }}
               >
-                Generar mi MVP Card →
+                {PEDIR_NOMBRE ? 'Generar mi MVP Card →' : '✓ Guardar MVP Card'}
               </button>
 
               <button
                 onClick={() => { setCapturedUrl(null); setNombre(''); irACamara() }}
-                className="flex items-center justify-center gap-2 text-white/40 text-sm py-2 font-semibold"
+                className="w-full py-3 rounded-full font-bold text-white text-sm uppercase tracking-widest border border-white/20 bg-white/5"
               >
                 ↺ Tomar otra foto
               </button>
