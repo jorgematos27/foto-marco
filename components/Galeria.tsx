@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import QRCode from 'qrcode'
 
 export type Foto = {
   id: string
@@ -111,15 +112,34 @@ export default function Galeria({ inicial }: { inicial: Foto[] }) {
 
 function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
   const [visible, setVisible] = useState(false)
+  const [flipped, setFlipped] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 10)
     return () => clearTimeout(t)
   }, [])
 
+  useEffect(() => {
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    QRCode.toDataURL(`${base}/share/${foto.id}`, {
+      width: 400,
+      margin: 1,
+      color: { dark: '#000000', light: '#FFFFFF' },
+    })
+      .then(setQrDataUrl)
+      .catch(() => {})
+  }, [foto.id])
+
   const cerrarConAnimacion = () => {
     setVisible(false)
     setTimeout(onClose, 220)
+  }
+
+  const borderStyle = {
+    background: 'linear-gradient(135deg, #FFD700 0%, #FF4444 50%, #FFD700 100%)',
+    boxShadow:
+      '0 0 60px rgba(255,215,0,0.5), 0 0 120px rgba(220,0,0,0.4), inset 0 0 20px rgba(255,255,255,0.15)',
   }
 
   return (
@@ -135,7 +155,7 @@ function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
     >
       <button
         onClick={cerrarConAnimacion}
-        className="absolute top-5 right-5 z-10 w-11 h-11 rounded-full bg-white/10 border border-white/30 text-white text-xl flex items-center justify-center backdrop-blur-sm hover:bg-white/20"
+        className="absolute top-5 right-5 z-20 w-11 h-11 rounded-full bg-white/10 border border-white/30 text-white text-xl flex items-center justify-center backdrop-blur-sm hover:bg-white/20"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         ✕
@@ -147,25 +167,92 @@ function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
           visible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
         }`}
         style={{
-          maxWidth: 'min(420px, 90vw)',
-          maxHeight: '88vh',
+          width: 'min(380px, 88vw)',
+          perspective: '1600px',
         }}
       >
         <div
-          className="relative rounded-2xl p-[3px]"
+          className="relative w-full"
           style={{
-            background: 'linear-gradient(135deg, #FFD700 0%, #FF4444 50%, #FFD700 100%)',
-            boxShadow:
-              '0 0 60px rgba(255,215,0,0.5), 0 0 120px rgba(220,0,0,0.4), inset 0 0 20px rgba(255,255,255,0.15)',
+            aspectRatio: '9 / 16',
+            maxHeight: '80vh',
+            transformStyle: 'preserve-3d',
+            WebkitTransformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
+            transition: 'transform 0.75s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <img
-            src={foto.image_url}
-            alt={foto.nombre ?? 'MVP Card'}
-            className="block rounded-[14px] max-h-[85vh] w-auto"
-            style={{ maxWidth: '100%' }}
-          />
+          {/* ─── FRENTE: Imagen de la carta ─── */}
+          <div
+            className="absolute inset-0 rounded-2xl p-[3px]"
+            style={{
+              ...borderStyle,
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
+          >
+            <img
+              src={foto.image_url}
+              alt={foto.nombre ?? 'MVP Card'}
+              className="w-full h-full object-cover rounded-[14px]"
+            />
+          </div>
+
+          {/* ─── REVERSO: QR + Descarga ─── */}
+          <div
+            className="absolute inset-0 rounded-2xl p-[3px]"
+            style={{
+              ...borderStyle,
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            <div className="w-full h-full bg-black rounded-[14px] flex flex-col items-center justify-center gap-5 px-5 py-6">
+              <p
+                className="font-black text-xl uppercase tracking-widest text-center"
+                style={{
+                  color: '#FFD700',
+                  fontFamily: 'var(--font-oswald), Impact',
+                  textShadow: '0 0 20px rgba(255,215,0,0.4)',
+                }}
+              >
+                Comparte
+              </p>
+
+              {qrDataUrl ? (
+                <div className="bg-white p-3 rounded-xl shadow-xl">
+                  <img src={qrDataUrl} alt="QR" className="w-44 h-44 sm:w-48 sm:h-48" />
+                </div>
+              ) : (
+                <div className="w-44 h-44 sm:w-48 sm:h-48 bg-white/10 rounded-xl animate-pulse" />
+              )}
+
+              <p className="text-white/50 text-xs text-center uppercase tracking-widest">
+                Escanea el QR para abrir esta carta
+              </p>
+
+              <a
+                href={`/api/download?url=${encodeURIComponent(foto.image_url)}&id=${foto.id}`}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-white font-bold text-xs uppercase tracking-widest"
+                style={{
+                  background: 'linear-gradient(135deg, #DD0000 0%, #770000 100%)',
+                  boxShadow: '0 0 25px rgba(220,0,0,0.45)',
+                }}
+              >
+                ↓ Descargar tarjeta
+              </a>
+            </div>
+          </div>
         </div>
+
+        {/* Botón flotante para voltear */}
+        <button
+          onClick={() => setFlipped((f) => !f)}
+          className="absolute left-1/2 -translate-x-1/2 -bottom-14 px-6 py-2.5 rounded-full text-white text-xs font-bold uppercase tracking-widest border border-white/30 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors whitespace-nowrap"
+        >
+          ↻ {flipped ? 'Ver carta' : 'Voltear'}
+        </button>
       </div>
     </div>
   )
