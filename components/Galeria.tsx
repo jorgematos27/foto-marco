@@ -167,7 +167,10 @@ function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
           visible ? 'scale-100 opacity-100' : 'scale-75 opacity-0'
         }`}
         style={{
-          width: 'min(380px, 88vw)',
+          /* ancho derivado del alto disponible para que 9:16 no se recorte:
+             - 85vh del alto → ancho = 85vh * 9/16 ≈ 47.8vh
+             - también limitado por ancho de pantalla y máximo absoluto */
+          width: 'min(380px, 47vh, 88vw)',
           perspective: '1600px',
         }}
       >
@@ -175,7 +178,6 @@ function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
           className="relative w-full"
           style={{
             aspectRatio: '9 / 16',
-            maxHeight: '80vh',
             transformStyle: 'preserve-3d',
             WebkitTransformStyle: 'preserve-3d',
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
@@ -194,7 +196,7 @@ function Modal({ foto, onClose }: { foto: Foto; onClose: () => void }) {
             <img
               src={foto.image_url}
               alt={foto.nombre ?? 'MVP Card'}
-              className="w-full h-full object-cover rounded-[14px]"
+              className="w-full h-full object-contain rounded-[14px] bg-black"
             />
           </div>
 
