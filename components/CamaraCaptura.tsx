@@ -7,6 +7,8 @@ type Estado = 'bienvenida' | 'camara' | 'nombre' | 'guardando' | 'resultado'
 
 const COUNTDOWN = 10
 const REINICIO_SEG = 10
+// Feature flag: cambiar a true para pedir el nombre antes de generar la tarjeta
+const PEDIR_NOMBRE = false
 
 export default function CamaraCaptura() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -95,8 +97,13 @@ export default function CamaraCaptura() {
     ctx.drawImage(marco, 0, 0, 1080, 1920)
 
     detenerStream()
-    setCapturedUrl(canvas.toDataURL('image/png'))
-    setEstado('nombre')
+    const dataUrl = canvas.toDataURL('image/png')
+    setCapturedUrl(dataUrl)
+    if (PEDIR_NOMBRE) {
+      setEstado('nombre')
+    } else {
+      void generarCard(dataUrl, '')
+    }
   }, [])
 
   const iniciarConteo = useCallback(() => {
@@ -143,8 +150,10 @@ export default function CamaraCaptura() {
     }
   }
 
-  const generarCard = async () => {
-    if (!capturedUrl || !canvasRef.current || !nombre.trim()) return
+  const generarCard = async (urlCaptura?: string, nombreUsuario?: string) => {
+    const url = urlCaptura ?? capturedUrl
+    const name = (nombreUsuario ?? nombre).trim()
+    if (!url || !canvasRef.current) return
     setEstado('guardando')
     setProgreso(0)
 
@@ -159,31 +168,33 @@ export default function CamaraCaptura() {
     await new Promise<void>(res => {
       const img = new Image()
       img.onload = () => { ctx.drawImage(img, 0, 0, 1080, 1920); res() }
-      img.src = capturedUrl
+      img.src = url
     })
     log('canvas listo')
 
-    await document.fonts.ready
-    const text = nombre.trim().toUpperCase()
-    const size = Math.max(72, Math.min(130, Math.floor(950 / Math.max(text.length, 1))))
+    if (name) {
+      await document.fonts.ready
+      const text = name.toUpperCase()
+      const size = Math.max(72, Math.min(130, Math.floor(950 / Math.max(text.length, 1))))
 
-    ctx.save()
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.font = `bold italic ${size}px Oswald, Impact, Arial Black`
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'
-    ctx.shadowBlur = 18
-    ctx.shadowOffsetY = 5
-    ctx.strokeStyle = '#2a0000'
-    ctx.lineWidth = 8
-    ctx.strokeText(text, 540, 1640)
-    const grad = ctx.createLinearGradient(0, 1590, 0, 1695)
-    grad.addColorStop(0, '#FFF176')
-    grad.addColorStop(0.45, '#FFD700')
-    grad.addColorStop(1, '#B8860B')
-    ctx.fillStyle = grad
-    ctx.fillText(text, 540, 1640)
-    ctx.restore()
+      ctx.save()
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.font = `bold italic ${size}px Oswald, Impact, Arial Black`
+      ctx.shadowColor = 'rgba(0,0,0,0.9)'
+      ctx.shadowBlur = 18
+      ctx.shadowOffsetY = 5
+      ctx.strokeStyle = '#2a0000'
+      ctx.lineWidth = 8
+      ctx.strokeText(text, 540, 1640)
+      const grad = ctx.createLinearGradient(0, 1590, 0, 1695)
+      grad.addColorStop(0, '#FFF176')
+      grad.addColorStop(0.45, '#FFD700')
+      grad.addColorStop(1, '#B8860B')
+      ctx.fillStyle = grad
+      ctx.fillText(text, 540, 1640)
+      ctx.restore()
+    }
 
     // Fake progress animation
     let fake = 0
@@ -198,7 +209,7 @@ export default function CamaraCaptura() {
       try {
         const form = new FormData()
         form.append('foto', blob, 'foto.png')
-        form.append('nombre', nombre.trim())
+        form.append('nombre', name)
 
         const res = await fetch('/api/upload', { method: 'POST', body: form })
         log('fetch respondido')
@@ -386,7 +397,7 @@ export default function CamaraCaptura() {
               </div>
 
               <button
-                onClick={generarCard}
+                onClick={() => generarCard()}
                 disabled={!nombre.trim()}
                 className="w-full py-5 rounded-full font-black text-white text-lg uppercase tracking-widest transition-all disabled:opacity-35"
                 style={{
