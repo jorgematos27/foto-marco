@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     .from('fotos-marco')
     .getPublicUrl(fileName)
 
-  const qrUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/foto/${id}`
+  const qrUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/share/${id}`
   const nombre = (formData.get('nombre') as string | null) || null
 
   const { error: dbError } = await supabaseAdmin
