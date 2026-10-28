@@ -1,12 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import QRCode from 'qrcode'
 
 type Estado = 'bienvenida' | 'camara' | 'nombre' | 'guardando' | 'resultado'
 
 const COUNTDOWN = 10
-const REINICIO_SEG = 10
 // Feature flag: cambiar a true para pedir el nombre antes de generar la tarjeta
 const PEDIR_NOMBRE = false
 
@@ -27,7 +27,6 @@ export default function CamaraCaptura() {
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [imagenUrl, setImagenUrl] = useState<string | null>(null)
   const [fotoId, setFotoId] = useState<string | null>(null)
-  const [reinicioSeg, setReinicioSeg] = useState(REINICIO_SEG)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -219,25 +218,14 @@ export default function CamaraCaptura() {
         setProgreso(100)
         if (!res.ok) throw new Error(data.error)
 
-        const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/foto/${data.id}`
+        const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/share/${data.id}`
         const qr = await QRCode.toDataURL(cardUrl, { width: 280, margin: 1 })
 
         setQrUrl(qr)
         setImagenUrl(data.image_url)
         setFotoId(data.id)
 
-        setTimeout(() => {
-          setEstado('resultado')
-          let t = REINICIO_SEG
-          setReinicioSeg(t)
-          const tick = () => {
-            t -= 1
-            setReinicioSeg(t)
-            if (t > 0) timerRef.current = setTimeout(tick, 1000)
-            else reiniciar()
-          }
-          timerRef.current = setTimeout(tick, 1000)
-        }, 400)
+        setTimeout(() => setEstado('resultado'), 400)
       } catch {
         clearInterval(interval)
         setError('Error al guardar. Intenta de nuevo.')
@@ -256,7 +244,6 @@ export default function CamaraCaptura() {
     setFotoId(null)
     setProgreso(0)
     setError(null)
-    setReinicioSeg(REINICIO_SEG)
     setEstado('bienvenida')
   }
 
@@ -484,18 +471,29 @@ export default function CamaraCaptura() {
             {imagenUrl && (
               <a
                 href={`/api/download?url=${encodeURIComponent(imagenUrl)}&id=${fotoId ?? ''}`}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-white font-bold text-sm uppercase tracking-widest border border-white/20 bg-white/10 backdrop-blur-sm"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-white font-bold text-xs uppercase tracking-widest border border-white/20 bg-white/10 backdrop-blur-sm"
               >
-                ↓ También puedes descargar aquí
+                ↓ Descargar
               </a>
             )}
 
             <button
               onClick={reiniciar}
-              className="text-white/30 text-xs font-medium"
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-full font-black text-white text-sm uppercase tracking-widest"
+              style={{
+                background: 'linear-gradient(135deg, #DD0000 0%, #770000 100%)',
+                boxShadow: '0 0 35px rgba(220,0,0,0.45)',
+              }}
             >
-              Volviendo al inicio en {reinicioSeg}s... (toca para reiniciar)
+              📷 Tomar otra foto
             </button>
+
+            <Link
+              href="/gallery"
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-white font-bold text-sm uppercase tracking-widest border border-white/20 bg-white/5 backdrop-blur-sm"
+            >
+              🖼️ Ver galería
+            </Link>
           </div>
         </div>
       )}
