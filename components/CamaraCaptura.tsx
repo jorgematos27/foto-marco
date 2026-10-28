@@ -5,7 +5,7 @@ import QRCode from 'qrcode'
 
 type Estado = 'bienvenida' | 'camara' | 'nombre' | 'guardando' | 'resultado'
 
-const COUNTDOWN = 3
+const COUNTDOWN = 10
 const REINICIO_SEG = 10
 
 export default function CamaraCaptura() {
